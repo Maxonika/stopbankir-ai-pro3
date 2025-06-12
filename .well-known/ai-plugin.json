@@ -3,10 +3,10 @@
   "name_for_human": "StopBankir AI Actions",
   "name_for_model": "stopbankir_actions",
   "description_for_model": "Actions for searching practice, checking deadlines, checking case status, counterparties, summarizing PDF, comparing positions and suggesting documents.",
-  "api": {
-    "type": "openapi",
-    "url": "https://stopbankir-ai-pro3.onrender.com/swagger.yaml"
-  },
+ "api": {
+  "type": "openapi",
+  "url": "https://stopbankir-ai-pro3.onrender.com/swagger.json"
+},
   "auth": {
     "type": "none"
   },
