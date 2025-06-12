@@ -1,12 +1,20 @@
 from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 from datetime import datetime, timedelta
 
 app = FastAPI(title="StopBankir AI PRO Actions API v2")
 
-from fastapi.responses import Response
+# Enable CORS for GPT Builder compatibility
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # можно поставить свой домен вместо "*"
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/swagger.yaml", response_class=Response)
 def get_swagger_yaml():
@@ -119,10 +127,8 @@ def suggest_documents(req: SuggestDocumentsRequest):
     ]
     return SuggestDocumentsResponse(suggested_documents=documents)
 
-from fastapi.responses import Response, FileResponse
-
 # Корневой endpoint → чтобы HEAD / давал 200 OK
-@app.get("/", response_class=Response)
+@app.api_route("/", methods=["GET", "HEAD"])
 def root():
     return Response(content='{"status": "ok"}', media_type="application/json")
 
@@ -135,4 +141,3 @@ def get_ai_plugin():
 @app.get("/swagger.json")
 def get_swagger_json():
     return FileResponse("swagger.json", media_type="application/json")
-
