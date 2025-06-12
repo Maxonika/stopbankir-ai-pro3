@@ -10,9 +10,13 @@ app = FastAPI(title="StopBankir AI PRO Actions API v2")
 def get_ai_plugin():
     return FileResponse(".well-known/ai-plugin.json")
 
-@app.get("/swagger.yaml")
+from fastapi.responses import Response
+
+@app.get("/swagger.yaml", response_class=Response)
 def get_swagger_yaml():
-    return FileResponse("swagger.yaml")
+    with open("swagger.yaml", "r", encoding="utf-8") as f:
+        content = f.read()
+    return Response(content, media_type="application/yaml")
 
 class SearchRequest(BaseModel):
     query: str
