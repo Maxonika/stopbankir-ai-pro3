@@ -2,6 +2,7 @@ openapi: 3.0.0
 info:
   title: StopBankir AI PRO Actions API v2
   version: "2.2"
+  x-gpt-action: true
 servers:
   - url: https://stopbankir-ai-pro3.onrender.com
 paths:
