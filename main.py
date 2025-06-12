@@ -122,3 +122,21 @@ def suggest_documents(req: SuggestDocumentsRequest):
         "Доказательства отсутствия контролирующего влияния"
     ]
     return SuggestDocumentsResponse(suggested_documents=documents)
+
+from fastapi.responses import Response, FileResponse
+
+# Корневой endpoint → чтобы HEAD / давал 200 OK
+@app.get("/", response_class=Response)
+def root():
+    return Response(content='{"status": "ok"}', media_type="application/json")
+
+# Сервис для .well-known/ai-plugin.json
+@app.get("/.well-known/ai-plugin.json")
+def get_ai_plugin():
+    return FileResponse(".well-known/ai-plugin.json", media_type="application/json")
+
+# Сервис для swagger.json
+@app.get("/swagger.json")
+def get_swagger_json():
+    return FileResponse("swagger.json", media_type="application/json")
+
