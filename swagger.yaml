@@ -3,7 +3,7 @@ info:
   title: StopBankir AI PRO Actions API v2
   version: "2.0"
   servers:
-  url: https://stopbankir-ai-pro3.onrender.com
+  - url: https://stopbankir-ai-pro3.onrender.com
 paths:
   /search_practice:
     post:
