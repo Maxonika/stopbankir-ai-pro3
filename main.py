@@ -6,10 +6,6 @@ from datetime import datetime, timedelta
 
 app = FastAPI(title="StopBankir AI PRO Actions API v2")
 
-@app.get("/.well-known/ai-plugin.json")
-def get_ai_plugin():
-    return FileResponse(".well-known/ai-plugin.json")
-
 from fastapi.responses import Response
 
 @app.get("/swagger.yaml", response_class=Response)
