@@ -5,7 +5,7 @@
   "description_for_model": "Actions for searching practice, checking deadlines, checking case status, counterparties, summarizing PDF, comparing positions and suggesting documents.",
   "api": {
     "type": "openapi",
-    "url": "https://YOUR_RENDER_URL/swagger.yaml"
+    "url": "https://stopbankir-ai-pro3.onrender.com/swagger.yaml"
   },
   "auth": {
     "type": "none"
