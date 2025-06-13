@@ -1,11 +1,13 @@
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse, FileResponse, Response
+from fastapi.responses import JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
+import json
 
 app = FastAPI(title="StopBankir AI PRO Actions API v2")
 
+# ВАЖНО: включаем CORS → GPT Builder теперь проверяет CORS на swagger.json
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,7 +20,7 @@ app.add_middleware(
 def root():
     return Response(content='{"status": "ok"}', media_type="application/json")
 
-# ВАЖНО — здесь мы не FileResponse, а прям JSONResponse → тогда GPT Builder точно примет
+# Отдаём ai-plugin.json как JSON → НЕ FileResponse (иначе GPT Builder может ругаться)
 @app.get("/.well-known/ai-plugin.json")
 def get_ai_plugin():
     return JSONResponse({
@@ -38,9 +40,12 @@ def get_ai_plugin():
         "legal_info_url": "https://your-site.com/legal"
     })
 
+# ОЧЕНЬ ВАЖНО → swagger.json отдаём как JSONResponse → иначе GPT Builder даст "Could not find valid URL in servers"
 @app.get("/swagger.json")
 def get_swagger_json():
-    return FileResponse("swagger.json", media_type="application/json")
+    with open("swagger.json", "r", encoding="utf-8") as f:
+        swagger = json.load(f)
+    return JSONResponse(content=swagger)
 
 # Action 1: Поиск судебной практики
 class SearchRequest(BaseModel):
