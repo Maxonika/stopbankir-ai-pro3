@@ -1,0 +1,122 @@
+{
+  "name": "LegalAI - compare_positions - PRODUCTION_v1",
+  "nodes": [
+    {
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook"
+    },
+    {
+      "name": "Determine Input",
+      "type": "n8n-nodes-base.function",
+      "parameters": {
+        "functionCode": "\nconst pos1 = $json.position_1 || \"\";\nconst pos2 = $json.position_2 || \"\";\n\nconst isValid = typeof pos1 === 'string' && pos1.trim().length > 0 &&\n                typeof pos2 === 'string' && pos2.trim().length > 0;\n\nreturn [{\n  position_1: pos1,\n  position_2: pos2,\n  is_valid: isValid\n}];\n"
+      }
+    },
+    {
+      "name": "IF Valid Input",
+      "type": "n8n-nodes-base.if"
+    },
+    {
+      "name": "Compare Positions",
+      "type": "n8n-nodes-base.function",
+      "parameters": {
+        "functionCode": "\nconst pos1 = $json.position_1 || \"\";\nconst pos2 = $json.position_2 || \"\";\n\nconst pos1Words = pos1.split(\" \");\nconst pos2Words = pos2.split(\" \");\n\nconst uniqueToPos1 = pos1Words.filter(w => !pos2Words.includes(w));\nconst uniqueToPos2 = pos2Words.filter(w => !pos1Words.includes(w));\n\nconst summary1 = pos1.slice(0, 500) + (pos1.length > 500 ? \"...\" : \"\");\nconst summary2 = pos2.slice(0, 500) + (pos2.length > 500 ? \"...\" : \"\");\n\nconst comparisonResult = `В позиции 1 есть уникальные слова: ${uniqueToPos1.slice(0, 10).join(\", \") || \"нет\"}. В позиции 2 есть уникальные слова: ${uniqueToPos2.slice(0, 10).join(\", \") || \"нет\"}.`;\n\nreturn [{\n  position_1_summary: summary1,\n  position_2_summary: summary2,\n  comparison_result: comparisonResult\n}];\n"
+      }
+    },
+    {
+      "name": "Return Final JSON",
+      "type": "n8n-nodes-base.function"
+    },
+    {
+      "name": "Log Final Response",
+      "type": "n8n-nodes-base.function",
+      "parameters": {
+        "functionCode": "\nconsole.log(\"FINAL RESPONSE in /compare_positions\", {\n  position_1_summary: $json.position_1_summary,\n  position_2_summary: $json.position_2_summary,\n  comparison_result: $json.comparison_result,\n  error: $json.error\n});\n\nreturn [ $json ];\n"
+      }
+    },
+    {
+      "name": "Log Error",
+      "type": "n8n-nodes-base.function",
+      "parameters": {
+        "functionCode": "\nconsole.log(\"ERROR in /compare_positions → Invalid input\", {\n  position_1: $json.position_1,\n  position_2: $json.position_2\n});\n\nreturn [{\n  error: \"Invalid input in /compare_positions\",\n  position_1: $json.position_1,\n  position_2: $json.position_2\n}];\n"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Determine Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Input": {
+      "main": [
+        [
+          {
+            "node": "IF Valid Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Valid Input": {
+      "main": [
+        [
+          {
+            "node": "Compare Positions",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Positions": {
+      "main": [
+        [
+          {
+            "node": "Return Final JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return Final JSON": {
+      "main": [
+        [
+          {
+            "node": "Log Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Final Response": {
+      "main": [
+        []
+      ]
+    },
+    "Log Error": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "v1"
+}

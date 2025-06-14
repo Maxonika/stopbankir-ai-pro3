@@ -1,0 +1,122 @@
+{
+  "name": "LegalAI - suggest_documents - PRODUCTION_v2",
+  "nodes": [
+    {
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook"
+    },
+    {
+      "name": "Determine Input",
+      "type": "n8n-nodes-base.function",
+      "parameters": {
+        "functionCode": "\nconst role = $json.role || \"\";\nconst stage = $json.stage || \"\";\nconst caseDescription = $json.case_description || \"\";\n\nconst isValid = typeof role === 'string' && role.trim().length > 0 &&\n                typeof stage === 'string' && stage.trim().length > 0 &&\n                typeof caseDescription === 'string' && caseDescription.trim().length > 0;\n\nreturn [{\n  role,\n  stage,\n  case_description: caseDescription,\n  is_valid: isValid\n}];\n"
+      }
+    },
+    {
+      "name": "IF Valid Input",
+      "type": "n8n-nodes-base.if"
+    },
+    {
+      "name": "Suggest Documents",
+      "type": "n8n-nodes-base.function",
+      "parameters": {
+        "functionCode": "\nconst role = $json.role?.toLowerCase();\nconst stage = $json.stage?.toLowerCase();\nconst caseDescription = $json.case_description?.toLowerCase() || \"\";\n\nlet docs = [];\n\nif (role.includes(\"кредитор\")) {\n  docs.push(\"Заявление о включении в реестр требований кредиторов\");\n  if (stage.includes(\"наблюдение\") || stage.includes(\"конкурс\")) {\n    docs.push(\"Ходатайство о включении в собрание кредиторов\");\n  }\n  if (stage.includes(\"апелляция\")) {\n    docs.push(\"Апелляционная жалоба\");\n  }\n}\n\nif (role.includes(\"должник\")) {\n  docs.push(\"Заявление о признании банкротом\");\n  docs.push(\"Отчет должника о финансовом состоянии\");\n  if (stage.includes(\"наблюдение\")) {\n    docs.push(\"Заявление о реструктуризации задолженности\");\n  }\n}\n\nif (role.includes(\"управляющий\")) {\n  docs.push(\"Отчет о финансовом состоянии должника\");\n  docs.push(\"Заключение управляющего о результатах анализа сделок\");\n  if (stage.includes(\"конкурс\")) {\n    docs.push(\"Отчет конкурсного управляющего\");\n  }\n}\n\nif (role.includes(\"контрагент\")) {\n  docs.push(\"Отзыв на заявление о признании банкротом\");\n  docs.push(\"Ходатайство об обеспечении иска\");\n}\n\n// Дополнительно по keywords в case_description\nif (caseDescription.includes(\"оспаривание сделки\")) {\n  docs.push(\"Исковое заявление о признании сделки недействительной\");\n}\nif (caseDescription.includes(\"субсидиарная ответственность\")) {\n  docs.push(\"Исковое заявление о привлечении к субсидиарной ответственности\");\n}\nif (caseDescription.includes(\"реструктуризация задолженности\")) {\n  docs.push(\"План реструктуризации задолженности\");\n}\n\nreturn [{\n  suggested_documents: docs,\n  error: null\n}];\n"
+      }
+    },
+    {
+      "name": "Return Final JSON",
+      "type": "n8n-nodes-base.function"
+    },
+    {
+      "name": "Log Final Response",
+      "type": "n8n-nodes-base.function",
+      "parameters": {
+        "functionCode": "\nconsole.log(\"FINAL RESPONSE in /suggest_documents\", {\n  role: $json.role,\n  stage: $json.stage,\n  case_description: $json.case_description,\n  suggested_documents: $json.suggested_documents,\n  error: $json.error\n});\n\nreturn [ $json ];\n"
+      }
+    },
+    {
+      "name": "Log Error",
+      "type": "n8n-nodes-base.function",
+      "parameters": {
+        "functionCode": "\nconsole.log(\"ERROR in /suggest_documents → Invalid input\", {\n  role: $json.role,\n  stage: $json.stage,\n  case_description: $json.case_description\n});\n\nreturn [{\n  error: \"Invalid input in /suggest_documents\",\n  role: $json.role,\n  stage: $json.stage,\n  case_description: $json.case_description\n}];\n"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Determine Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Input": {
+      "main": [
+        [
+          {
+            "node": "IF Valid Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Valid Input": {
+      "main": [
+        [
+          {
+            "node": "Suggest Documents",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Suggest Documents": {
+      "main": [
+        [
+          {
+            "node": "Return Final JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return Final JSON": {
+      "main": [
+        [
+          {
+            "node": "Log Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Final Response": {
+      "main": [
+        []
+      ]
+    },
+    "Log Error": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "v2"
+}

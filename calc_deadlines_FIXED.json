@@ -1,0 +1,161 @@
+{
+  "name": "LegalAI - calc_deadlines - PRODUCTION_v2",
+  "nodes": [
+    {
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook"
+    },
+    {
+      "name": "Determine Input",
+      "type": "n8n-nodes-base.function"
+    },
+    {
+      "name": "IF Valid Input",
+      "type": "n8n-nodes-base.if"
+    },
+    {
+      "name": "Check Cache",
+      "type": "n8n-nodes-base.function"
+    },
+    {
+      "name": "IF Cache Hit",
+      "type": "n8n-nodes-base.if"
+    },
+    {
+      "name": "Calculate Deadline",
+      "type": "n8n-nodes-base.function"
+    },
+    {
+      "name": "Return Final JSON",
+      "type": "n8n-nodes-base.function"
+    },
+    {
+      "name": "Update Cache",
+      "type": "n8n-nodes-base.function"
+    },
+    {
+      "name": "Log Final Response",
+      "type": "n8n-nodes-base.function"
+    },
+    {
+      "name": "Log Error",
+      "type": "n8n-nodes-base.function"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Determine Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Input": {
+      "main": [
+        [
+          {
+            "node": "IF Valid Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Valid Input": {
+      "main": [
+        [
+          {
+            "node": "Check Cache",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Cache": {
+      "main": [
+        [
+          {
+            "node": "IF Cache Hit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Cache Hit": {
+      "main": [
+        [
+          {
+            "node": "Return Final JSON",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calculate Deadline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Deadline": {
+      "main": [
+        [
+          {
+            "node": "Return Final JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return Final JSON": {
+      "main": [
+        [
+          {
+            "node": "Update Cache",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Cache": {
+      "main": [
+        []
+      ]
+    },
+    "Log Final Response": {
+      "main": [
+        []
+      ]
+    },
+    "Log Error": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "v2"
+}

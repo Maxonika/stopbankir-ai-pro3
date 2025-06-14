@@ -1,0 +1,137 @@
+{
+  "name": "LegalAI - summarize_pdf - PRODUCTION_v1",
+  "nodes": [
+    {
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook"
+    },
+    {
+      "name": "Determine File Present",
+      "type": "n8n-nodes-base.function",
+      "parameters": {
+        "functionCode": "\nconst binaryKeys = Object.keys($binary);\nconst hasPdfFile = binaryKeys.includes('pdf_file');\n\nreturn [{\n  has_pdf_file: hasPdfFile\n}];\n"
+      }
+    },
+    {
+      "name": "IF File Present",
+      "type": "n8n-nodes-base.if"
+    },
+    {
+      "name": "Extract Text From PDF",
+      "type": "n8n-nodes-base.function"
+    },
+    {
+      "name": "Summarize Text",
+      "type": "n8n-nodes-base.function",
+      "parameters": {
+        "functionCode": "\nconst text = $json.extracted_text || \"\";\nconst maxLength = 1000;\n\nconst summary = text.length > maxLength ? text.slice(0, maxLength) + \"...\" : text;\n\nreturn [{\n  summary\n}];\n"
+      }
+    },
+    {
+      "name": "Return Final JSON",
+      "type": "n8n-nodes-base.function"
+    },
+    {
+      "name": "Log Final Response",
+      "type": "n8n-nodes-base.function",
+      "parameters": {
+        "functionCode": "\nconsole.log(\"FINAL RESPONSE in /summarize_pdf\", {\n  summary: $json.summary,\n  error: $json.error\n});\n\nreturn [ $json ];\n"
+      }
+    },
+    {
+      "name": "Log Error",
+      "type": "n8n-nodes-base.function",
+      "parameters": {
+        "functionCode": "\nconsole.log(\"ERROR in /summarize_pdf → Missing or invalid PDF file\");\n\nreturn [{\n  error: \"Missing or invalid PDF file\"\n}];\n"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Determine File Present",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine File Present": {
+      "main": [
+        [
+          {
+            "node": "IF File Present",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF File Present": {
+      "main": [
+        [
+          {
+            "node": "Extract Text From PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text From PDF": {
+      "main": [
+        [
+          {
+            "node": "Summarize Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Text": {
+      "main": [
+        [
+          {
+            "node": "Return Final JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return Final JSON": {
+      "main": [
+        [
+          {
+            "node": "Log Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Final Response": {
+      "main": [
+        []
+      ]
+    },
+    "Log Error": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "v1"
+}
